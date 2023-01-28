@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 5f6896870ae12f34baa5d152b5858369
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - a dripping marker
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: e85909ae3edb5ce4c9952b06ac3b9e5c, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
