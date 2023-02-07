@@ -8,39 +8,35 @@ public class GameManagerData : ScriptableObject
 {
     [SerializeField]
     private string nextSceneName;
-    [SerializeField]
+    [SerializeField,HideInInspector]
     private GameObject unityPrefab;
-    [SerializeField]
+    [SerializeField,HideInInspector]
     private GameObject acquirePrefab;
 
     private void OnEnable()
     {
         if (SceneManager.GetActiveScene().name == "TitleScene")
         {
-            nextSceneName = null;
+            nextSceneName = "";
             unityPrefab = null;
             acquirePrefab = null;
         }
     }
-
-    public void SetNextSceneName(string nextSceneName)
-    {
-        this.nextSceneName = nextSceneName;
-    }
+      
 
     public string GetNextSceneName()
     {
         return nextSceneName;
     }
 
-    public void SetAcquire(GameObject acquire)
+    public void SetAcquire(GameObject acquirePref)
     {
-        this.acquirePrefab = acquire;
+        this.acquirePrefab = acquirePref;
     }
 
-    public void SetUnity(GameObject unity)
+    public void SetUnity(GameObject unityPref)
     {
-        this.unityPrefab = unity;
+        this.unityPrefab = unityPref;
     }
 
     public GameObject GetUnityPrefab()

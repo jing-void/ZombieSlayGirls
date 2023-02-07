@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0f32803a981d504b85d5502107552f7, type: 3}
   m_Name: GameManagerData
   m_EditorClassIdentifier: 
-  nextSceneName: 
+  nextSceneName: PlayScene
   unityPrefab: {fileID: 0}
   acquirePrefab: {fileID: 0}
