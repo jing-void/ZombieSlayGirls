@@ -13,7 +13,7 @@ public class SoundController : MonoBehaviour
 
     public enum SelectSE
     {
-        PressSpace,
+        DASH,
 
     };
 
@@ -35,7 +35,7 @@ public class SoundController : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(instance);
         }
         else
         {

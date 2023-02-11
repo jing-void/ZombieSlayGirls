@@ -10,6 +10,7 @@ public class ZombieController : MonoBehaviour
 
     public float walkSpeed;
     public float runSpeed;
+    public int zombieAT;
 
    public enum STATE
     {
@@ -24,6 +25,12 @@ public class ZombieController : MonoBehaviour
 
     private void Start()
     {
+        Vector3 spawnPos = new Vector3(Random.Range(2, 147), 0, Random.Range(2, 147));
+
+        for (int count = 0; count < 2; count++)
+        {
+            Instantiate(this.gameObject, spawnPos, Quaternion.identity);
+        }
 
         zombieAnim = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
@@ -73,20 +80,43 @@ public class ZombieController : MonoBehaviour
 
                 break;
             case STATE.ATTACK:
-                TurnOffTrigger();
-                if (true)
+                if (GameState.gameOver)
                 {
+                    TurnOffTrigger();
+                    agent.ResetPath();
+                    state = STATE.WALK;
 
-
-                    zombieAnim.SetBool("Attack", true); break;
+                    return;
                 }
+                TurnOffTrigger();
+                zombieAnim.SetBool("Attack", true);
+                if (DistanceToPlayer() > agent.stoppingDistance + 2)
+                {
+                    state = STATE.RUN;                  
+                }
+                break;
+
             case STATE.RUN:
+                if (GameState.gameOver)
+                {
+                    TurnOffTrigger();
+                    agent.ResetPath();
+                    state = STATE.WALK;
+                }
+                
+
                 agent.SetDestination(target.transform.position);
+
                 agent.stoppingDistance = 3;
 
                 TurnOffTrigger();
                 agent.speed = runSpeed;
                 zombieAnim.SetBool("Run", true);
+
+                if (agent.remainingDistance <= agent.stoppingDistance)
+                {
+                    state = STATE.ATTACK;
+                }
 
                 if (LostPlayer())
                 {
@@ -98,6 +128,7 @@ public class ZombieController : MonoBehaviour
                 }
                 break;
             case STATE.DEAD:
+                Destroy(agent);
                 zombieAnim.SetBool("Dead", true);  break;           
         }
 
@@ -106,6 +137,10 @@ public class ZombieController : MonoBehaviour
 
     float DistanceToPlayer()
     {
+       if (GameState.gameOver)
+        {
+           return Mathf.Infinity;
+        }
        return Vector3.Distance(target.transform.position, gameObject.transform.position);
     }
 
@@ -120,6 +155,7 @@ public class ZombieController : MonoBehaviour
 
     bool LostPlayer()
     {
+
         if (DistanceToPlayer() > 10)
         {
             return true;
@@ -136,11 +172,21 @@ public class ZombieController : MonoBehaviour
 
     }
 
-    public void Attack()
+    public void DamagePlayer()
     {
-
+        target.GetComponent<AcquireChanController>().TakeHit(zombieAT);
     }
 
+    public void Attack()
+    {
+        if (DistanceToPlayer() <= agent.stoppingDistance)
+        {
+            TurnOffTrigger();
+            zombieAnim.SetBool("Attack", true);
+        }
+        transform.LookAt(new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z));
+
+    }
     public void Run()
     {
 
