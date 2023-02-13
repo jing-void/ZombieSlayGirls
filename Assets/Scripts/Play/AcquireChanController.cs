@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 
@@ -17,8 +18,11 @@ public class AcquireChanController : MonoBehaviour
 	[SerializeField] private float	m_RotateSpeed	= 8.0f;
 	[SerializeField] private float	m_JumpForce		= 300.0f;
 	[SerializeField] private float	m_RunningStart	= 1.0f;
-	[SerializeField] private float playerHp;
+	                 public float   playerHp;
+	[SerializeField] private float healPoint;
 	[SerializeField] private new GameObject camera;
+	[SerializeField] private GameObject clearText, gameOverText;
+	[SerializeField] private GameObject menu;
     [SerializeField] private AudioClip[] m_AudioClip = null;
 	[SerializeField] private AudioSource m_AudioSource = null;
 
@@ -26,7 +30,7 @@ public class AcquireChanController : MonoBehaviour
 	// member
 	private Rigidbody	m_RigidBody	= null;
 	private Animator	m_Animator	= null;
-	private Slider      m_HpSlider    = null;      
+	public  Slider      m_HpSlider    = null;
 	private float		m_MoveTime	= 0;
 	private float		m_MoveSpeed	= 0.0f;
 	private bool		m_IsGround	= true;
@@ -35,6 +39,7 @@ public class AcquireChanController : MonoBehaviour
 	private float m_Xsensitivity = 3f, m_Ysensitivity = 3f;
 	private float speed = 0.1f;
 	private float minX = -90f, maxX = 90f;  // 角度制限用
+	private float maxHp;
 	Quaternion cameraRot, characterRot;
 	/*!
 	 *	----------------------------------------------------------------------
@@ -42,12 +47,16 @@ public class AcquireChanController : MonoBehaviour
 	*/
 	private void Awake()
 	{
+		GameState.gameOver = false;
+		GameState.gameClear = false;
 		m_RigidBody = this.GetComponentInChildren<Rigidbody>();
 		m_Animator = this.GetComponentInChildren<Animator>();
 		m_HpSlider = GameObject.Find("HpSlider").GetComponent<Slider>();
+		m_HpSlider.value = playerHp;
 		m_MoveSpeed = m_WalkSpeed;
 		cameraRot = camera.transform.localRotation;
 		characterRot = transform.localRotation;
+		maxHp = playerHp;
 	}
 
 	/*!
@@ -64,6 +73,9 @@ public class AcquireChanController : MonoBehaviour
 	*/
 	private void Update()
 	{
+		if (GameState.gameOver) return;
+		if (GameState.gameClear) return;
+
 		if (Input.GetKeyDown(KeyCode.Escape))
         {
 			cursorLock = false;
@@ -81,6 +93,7 @@ public class AcquireChanController : MonoBehaviour
 		{
 			Cursor.lockState = CursorLockMode.None;
 		}
+
         
 		float xRot = Input.GetAxis("Mouse X") * m_Ysensitivity;
 		float yRot = Input.GetAxis("Mouse Y") * m_Xsensitivity;
@@ -172,6 +185,9 @@ public class AcquireChanController : MonoBehaviour
 
 	private void FixedUpdate()
 	{
+		if (GameState.gameOver) return;
+		if (GameState.gameClear) return;
+
 		x = 0;
 		z = 0;
 
@@ -187,24 +203,51 @@ public class AcquireChanController : MonoBehaviour
     {
         if (other.gameObject.tag == "Goal")
         {
-			Debug.Log("Goal");
+			GameState.gameClear = true;
+			clearText.SetActive(true);
+			StartCoroutine("ShowMenu");
         }
+		else if (other.gameObject.tag == "HealItem")
+        {
+			if (maxHp > playerHp)
+			{
+				playerHp += healPoint;
+
+			 if (maxHp < playerHp)
+				{
+					playerHp = maxHp;
+				}
+			    HPUpdate();
+				Destroy(other.gameObject);
+			}
+		}
+	}
+
+	IEnumerator ShowMenu()
+    {
+		yield return new WaitForSeconds(1.5f);
+		menu.SetActive(true);
     }
 
-	public void TakeHit(int damage)
+	public void TakeHit(float damage)
     {
 		playerHp -= damage;
-		m_HpSlider.value = playerHp;
-
-		if (playerHp <= 0)
+        HPUpdate();
+		if (playerHp <= 0 && !GameState.gameOver)
         {
 			playerHp = 0;
 			m_HpSlider.value = playerHp;
 			GameState.gameOver = true;
+			Invoke("ReStartScene", 3f);
 		}
 		// playerHp = (int)Mathf.Clamp(playerHp - damage, 0, playerHp);
     }
 
+	public void HPUpdate()
+	{
+		m_HpSlider.value = playerHp;
+
+	}
 	public Quaternion ClampRotation(Quaternion q)
     {
 		q.x /= q.w;
@@ -220,6 +263,10 @@ public class AcquireChanController : MonoBehaviour
 		return q;
     }
 
+	public void ReStartScene()
+    {
+		SceneManager.LoadScene("PlayScene");
+    }
 	public void WalkStepSE(AudioClip clip)
     {
 		m_AudioSource.loop = true;
@@ -242,4 +289,6 @@ public class AcquireChanController : MonoBehaviour
 		m_AudioSource.loop = false;
 		m_AudioSource.pitch = 1;
 	}
+
+	
 }

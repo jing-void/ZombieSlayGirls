@@ -5,28 +5,24 @@ using UnityEngine.SceneManagement;
 
 public class SceneTransition : MonoBehaviour
 {
-    public static SceneTransition instance;
-       
+    public static int gameData1 = 22;
 
-    GameManagerData gameManagerData;
+
+    public static SceneTransition instance;
 
     private void Awake()
     {
-        if (instance == this)
+        if (instance == null)
         {
+            DontDestroyOnLoad(gameObject);
             instance = this;
-            DontDestroyOnLoad(instance);
         }
         else
         {
             Destroy(gameObject);
         }
     }
-    void Start()
-    {
-        gameManagerData = FindObjectOfType<GameSystemManager>().GetGameManagerData();
-    }
-
+ 
 
     public void LoadTo(string sceneName)
     {
@@ -38,10 +34,17 @@ public class SceneTransition : MonoBehaviour
         SceneManager.LoadScene(sceneName);
     }
 
-
-    public void GameStart()
+    public void Title()
     {
-        SceneManager.LoadScene(gameManagerData.GetNextSceneName());
+        SceneManager.LoadScene("TitleScene");
     }
 
+    public void CharaSelect()
+    {
+        SceneManager.LoadScene("CharaSelectScene");
+    }
+
+    public void PlayScene()
+    {
+        SceneManager.LoadScene("PlayScene");    }
 }

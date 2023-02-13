@@ -5,5 +5,5 @@ using UnityEngine;
 public class GameState : MonoBehaviour
 {
     public static bool gameOver = false;
-    
+    public static bool gameClear = false;   
 }

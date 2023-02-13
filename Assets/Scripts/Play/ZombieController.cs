@@ -4,10 +4,12 @@ using UnityEngine;
 using UnityEngine.AI;
 public class ZombieController : MonoBehaviour
 {
+    // member
     Animator zombieAnim;
     NavMeshAgent agent;
     GameObject target;
 
+    // inspector
     public float walkSpeed;
     public float runSpeed;
     public int zombieAT;
@@ -15,8 +17,8 @@ public class ZombieController : MonoBehaviour
    public enum STATE
     {
         IDLE,
-        RUN,//(CHASE)
-        WALK,        
+        CHASE,//(RUN)
+        WANDER, //(WALK)
         ATTACK,
         DEAD
     };
@@ -25,13 +27,6 @@ public class ZombieController : MonoBehaviour
 
     private void Start()
     {
-        Vector3 spawnPos = new Vector3(Random.Range(2, 147), 0, Random.Range(2, 147));
-
-        for (int count = 0; count < 2; count++)
-        {
-            Instantiate(this.gameObject, spawnPos, Quaternion.identity);
-        }
-
         zombieAnim = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
         target = GameObject.FindGameObjectWithTag("Player");
@@ -45,16 +40,15 @@ public class ZombieController : MonoBehaviour
                 TurnOffTrigger();
                if (CanSeePlayer())
                 {
-                    state = STATE.RUN;                    
+                    state = STATE.CHASE;                    
                 }
                 else if(Random.Range(0, 5000) < 10)                
                 {
-                    state = STATE.WALK;
+                    state = STATE.WANDER;
                 }
 
-
                 break;
-            case STATE.WALK:
+            case STATE.WANDER:
                 if (!agent.hasPath)
                 {
                     float x = transform.position.x + Random.Range(-5, 5);
@@ -75,7 +69,7 @@ public class ZombieController : MonoBehaviour
                     }
                     if (CanSeePlayer())
                 {
-                    state = STATE.RUN;                  
+                    state = STATE.CHASE;                  
                 }
 
                 break;
@@ -84,24 +78,28 @@ public class ZombieController : MonoBehaviour
                 {
                     TurnOffTrigger();
                     agent.ResetPath();
-                    state = STATE.WALK;
+                    state = STATE.WANDER;
 
                     return;
                 }
                 TurnOffTrigger();
                 zombieAnim.SetBool("Attack", true);
+
+                transform.LookAt(new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z));
+
                 if (DistanceToPlayer() > agent.stoppingDistance + 2)
                 {
-                    state = STATE.RUN;                  
+                    state = STATE.CHASE;                  
                 }
                 break;
 
-            case STATE.RUN:
+            case STATE.CHASE:
                 if (GameState.gameOver)
                 {
                     TurnOffTrigger();
                     agent.ResetPath();
-                    state = STATE.WALK;
+                    state = STATE.WANDER;
+                    return;
                 }
                 
 
@@ -121,10 +119,7 @@ public class ZombieController : MonoBehaviour
                 if (LostPlayer())
                 {
                     agent.ResetPath();
-                    state = STATE.WALK;
-                    TurnOffTrigger();
-                    zombieAnim.SetBool("Idle", true);
-                    
+                    state = STATE.WANDER;                    
                 }
                 break;
             case STATE.DEAD:
@@ -155,8 +150,7 @@ public class ZombieController : MonoBehaviour
 
     bool LostPlayer()
     {
-
-        if (DistanceToPlayer() > 10)
+        if (DistanceToPlayer() > 15)
         {
             return true;
         }
@@ -174,6 +168,7 @@ public class ZombieController : MonoBehaviour
 
     public void DamagePlayer()
     {
+        if(target != null)
         target.GetComponent<AcquireChanController>().TakeHit(zombieAT);
     }
 
